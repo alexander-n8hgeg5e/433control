@@ -7,3 +7,6 @@
 [submodule "libs/RFReceiver"]
 	path = libs/RFReceiver
 	url = https://github.com/zeitgeist87/RFReceiver
+[submodule "Arduino-Makefile"]
+	path = Arduino-Makefile
+	url = https://github.com/sudar/Arduino-Makefile
