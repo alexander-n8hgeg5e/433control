@@ -1,0 +1,123 @@
+#!/usr/bin/python3
+# Copyright 2018 Alexander Wilhelmi
+# This file is part of 433control.
+# 
+# 433control is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# 433control is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with 433control.  If not, see <http://www.gnu.org/licenses/>.
+# 
+# Diese Datei ist Teil von 433control.
+# 
+# 433control ist Freie Software: Sie können es unter den Bedingungen
+# der GNU General Public License, wie von der Free Software Foundation,
+# Version 3 der Lizenz oder (nach Ihrer Wahl) jeder neueren
+# veröffentlichten Version, weiter verteilen und/oder modifizieren.
+# 
+# 433control wird in der Hoffnung, dass es nützlich sein wird, aber
+# OHNE JEDE GEWÄHRLEISTUNG, bereitgestellt; sogar ohne die implizite
+# Gewährleistung der MARKTFÄHIGKEIT oder EIGNUNG FÜR EINEN BESTIMMTEN ZWECK.
+# Siehe die GNU General Public License für weitere Details.
+# 
+# Sie sollten eine Kopie der GNU General Public License zusammen mit diesem
+# Programm erhalten haben. Wenn nicht, siehe <https://www.gnu.org/licenses/>.
+# Copyright 2018 Alexander Wilhelmi
+# This file is part of 433control.
+# 
+# 433control is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# 433control is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with 433control.  If not, see <http://www.gnu.org/licenses/>.
+# 
+# Diese Datei ist Teil von 433control.
+# 
+# 433control ist Freie Software: Sie können es unter den Bedingungen
+# der GNU General Public License, wie von der Free Software Foundation,
+# Version 3 der Lizenz oder (nach Ihrer Wahl) jeder neueren
+# veröffentlichten Version, weiter verteilen und/oder modifizieren.
+# 
+# 433control wird in der Hoffnung, dass es nützlich sein wird, aber
+# OHNE JEDE GEWÄHRLEISTUNG, bereitgestellt; sogar ohne die implizite
+# Gewährleistung der MARKTFÄHIGKEIT oder EIGNUNG FÜR EINEN BESTIMMTEN ZWECK.
+# Siehe die GNU General Public License für weitere Details.
+# 
+# Sie sollten eine Kopie der GNU General Public License zusammen mit diesem
+# Programm erhalten haben. Wenn nicht, siehe <https://www.gnu.org/licenses/>.
+intbytes=2
+maxintsize=2**(intbytes*8)
+byteorder="little"
+baudrate=500000
+port='/dev/ttyACM0'
+codedir="/usr/share/433control"
+codes={    "1_1_0"   :    "datacapture_fb1_1_off"    ,
+           "1_1_1"   :    "datacapture_fb1_1_on"     ,
+           "1_2_0"   :    "datacapture_fb1_2_off"    ,
+           "1_2_1"   :    "datacapture_fb1_2_on"     ,
+           "1_3_0"   :    "datacapture_fb1_3_off"    ,
+           "1_3_1"   :    "datacapture_fb1_3_on"     ,
+           "1_4_0"   :    "datacapture_fb1_4_off"    ,
+           "1_4_1"   :    "datacapture_fb1_4_on"     ,
+           "1_a_0"   :    "datacapture_fb1_all_off"  ,
+           "1_a_1"   :    "datacapture_fb1_all_on"   ,  
+           "2_1_0"   :    "datacapture_fb2_1_off"    ,
+           "2_1_1"   :    "datacapture_fb2_1_on"     ,
+           "2_2_0"   :    "datacapture_fb2_2_off"    ,
+           "2_2_1"   :    "datacapture_fb2_2_on"     ,
+           "2_3_0"   :    "datacapture_fb2_3_off"    ,
+           "2_3_1"   :    "datacapture_fb2_3_on"     ,
+           "2_4_0"   :    "datacapture_fb2_4_off"    ,
+           "2_4_1"   :    "datacapture_fb2_4_on"     ,
+           "2_a_0"   :    "datacapture_fb2_all_off"  ,
+           "2_a_1"   :    "datacapture_fb2_all_on"      }
+#print(codes) 
+import serial
+from sys import argv
+s = serial.Serial(port=port, baudrate=baudrate,timeout=0)
+from time import sleep
+for i in range(3):
+    for i in s.readlines():
+        print(i.decode(errors="replace"))
+    sleep(1) 
+
+fname=codedir+'/'+codes[argv[1]+'_'+argv[2]+'_'+argv[3]]
+
+print(fname)
+f=open(fname,'rt')
+data=f.read().strip()
+f.close()
+liste=data.split(" ")
+liste=[0x0000,0x0000,0x0000,0xFFFF]+liste
+liste.append(0)
+#print("length: "+ str(len(liste)))
+#print(liste)
+for i in liste:
+    a=int(i)
+    if a > maxintsize - 1:
+            raise Exception("value to large")
+    z=a.to_bytes(intbytes,byteorder,signed=False)
+    z0=z[0].to_bytes(1,byteorder,signed=False)
+    z1=z[1].to_bytes(1,byteorder,signed=False)
+    s.write(z1)
+    s.write(z0)
+    s.flush()
+sleep(1)
+for i in s.readlines():
+    print(i.decode(errors="replace"))
+
+s.close()

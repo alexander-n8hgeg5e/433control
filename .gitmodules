@@ -1,0 +1,9 @@
+[submodule "libs/PinChangeInterruptHandler"]
+	path = libs/PinChangeInterruptHandler
+	url = https://github.com/zeitgeist87/PinChangeInterruptHandler
+[submodule "libs/RFTransmitter"]
+	path = libs/RFTransmitter
+	url = https://github.com/zeitgeist87/RFTransmitter
+[submodule "libs/RFReceiver"]
+	path = libs/RFReceiver
+	url = https://github.com/zeitgeist87/RFReceiver
