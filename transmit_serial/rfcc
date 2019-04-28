@@ -69,25 +69,27 @@ s = serial.Serial(port='/dev/ttyACM0', baudrate=baudrate,timeout=0)
 
 from time import sleep
 
-for i in range(3):
+for i in range(2):
     for i in s.readlines():
         print(i.decode(errors="replace"))
-    sleep(1) 
-
+    sleep(2) 
+hex_18=(0x18).to_bytes(1,'little')
 zero=(0x00).to_bytes(1,'little')
 ff=(0xFF).to_bytes(1,'little')
-_7f=(0x7F).to_bytes(1,'little')
-liste=[zero,zero,zero,zero,ff,_7f]+[argv[1].encode('ascii')]
-liste.append(zero)
-#print("length: "+ str(len(liste)))
-#print(liste)
-
-for i in liste:
-    s.write(i)
-    s.flush()
-
+hex_7f=(0x7F).to_bytes(1,'little')
+data=zero+zero+zero+ff+hex_7f+argv[1].encode('ascii')
+s.write(hex_18)
+s.flush()
+sleep(2)
+s.write(data)
+s.flush()
+sleep(2)
+s.write(zero)
+s.write(hex_18)
+s.flush()
+for i in range(2):
+    for i in s.readlines():
+        print(i.decode(errors="replace"))
+        sleep(1)
 sleep(1)
-for i in s.readlines():
-    print(i.decode(errors="replace"))
-
 s.close()

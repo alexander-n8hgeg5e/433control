@@ -4,12 +4,12 @@ EAPI=6
 
 LICENSE=""
 
+PYTHON_COMPAT=( python3_{5,6} )
 EGIT_REPO_URI="${CODEDIR}/arduino/${PN} ${MYGITHUB_URIBASE}${PN}.git"
-inherit git-r3
+inherit git-r3 python-r1
 
 DESCRIPTION="control the stuff in the house "
 HOMEPAGE=""
-SRC_URI=""
 
 LICENSE=""
 SLOT="0"
@@ -17,11 +17,13 @@ KEYWORDS="~amd64 ~x86"
 IUSE=""
 
 DEPEND=""
-RDEPEND="${DEPEND}"
+RDEPEND="${DEPEND} \
+	dev-python/pyserial[$(python_gen_usedep 'python3*')]\
+	"
 
 src_install(){
 dobin transmit_serial/rfcc
-dobin transmit_serial/rfccc
+dobin transmit_serial/rf
 dodir /usr/share/433control
 insinto /usr/share/433control
 doins record_codes/datacapture_fb1_1_off
