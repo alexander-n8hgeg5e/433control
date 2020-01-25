@@ -5,7 +5,7 @@ EAPI=6
 LICENSE=""
 
 PYTHON_COMPAT=( python3_{5,6} )
-EGIT_REPO_URI="${CODEDIR}/arduino/${PN} ${MYGITHUB_URIBASE}${PN}.git"
+EGIT_REPO_URI="${CODEDIR}/${PN} ${MYGITHUB_URIBASE}${PN}.git"
 inherit git-r3 python-r1
 
 DESCRIPTION="control the stuff in the house "
@@ -24,6 +24,7 @@ RDEPEND="${DEPEND} \
 src_install(){
 dobin transmit_serial/rfcc
 dobin transmit_serial/rf
+dobin transmit_serial/gpio
 dodir /usr/share/433control
 insinto /usr/share/433control
 doins record_codes/datacapture_fb1_1_off

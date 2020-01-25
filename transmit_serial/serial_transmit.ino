@@ -136,12 +136,14 @@ void transmit() {
     }
 
 int read_single_char(){
-while (true){
-      if (Serial.available() > 0){
-           return Serial.read();}
-}}
+    while (true){
+        if (Serial.available() > 0){
+               return Serial.read(); // this func reads one byte at max
+        }
+    }
+}
 
-int wait_for_16bitFFFF(){
+int wait_FFXX(){
         while (true){
              if (Serial.available() > 0) {
                      c = Serial.read();
@@ -150,10 +152,16 @@ int wait_for_16bitFFFF(){
                                   if (Serial.available() > 0){
                                        c = Serial.read();
                                        if (c==0xFF){
-                                           return 1;
+                                           return 0xFF;
                                        }
                                        if (c==0x7F){
-                                           return 2;
+                                           return 0x7F;
+                                       }
+                                       if (c==0x8F){
+                                           return 0x8F;
+                                       }
+                                       if (c==0x9F){
+                                           return 0x9F;
                                        }
                                        else{
                                            break;
@@ -166,17 +174,72 @@ int wait_for_16bitFFFF(){
         }
 }
 
+int get_iopin(int * write_pinnum, char c){
+    /*
+    digital pins 0,..,25 are enumerated with ascii strings a,..,z
+    analog  pins A0,..,A9 are enumerated with ascii strings 0,..,9
+    */
+    if (c=='g'){return 1;}
+    if ( ('0' <= c ) & ( c <= '9' ) ){
+        *write_pinnum = c - 48;
+        return 0;
+    }
+    else if ( ('a' <= c ) & ( c <= 'z') ){
+        *write_pinnum = c - 97;
+        return 0;
+    }
+    return 1;
+}
+
+
 
 void loop() {
-        //Serial.println("waiting for 0xFFFF ");
-        if (wait_for_16bitFFFF() == 2){
-                Serial.println("one-character-send-mode active");
-                c = read_single_char();
-                rr[0] = c;
-                transmitter.send( rr , 1 );
-                Serial.print("byte transmitted: ");
-                Serial.println(rr[0]);
+        int mode;
+        //Serial.println("waiting for 0xFFFF or 0xFF7F");
+        mode=wait_FFXX();
+        if (mode == 0x7F){
+            Serial.println("one-character-send-mode active");
+            c = read_single_char();
+            rr[0] = c;
+            transmitter.send( rr , 1 );
+            Serial.print("byte transmitted: ");
+            Serial.println(rr[0]);
                }
+        else if (mode == 0x8F){
+            Serial.print("gpio out ");
+            c=read_single_char();
+            int pin_num;
+            if (get_iopin( &pin_num, c ) == 0 ){
+               Serial.print("pin=");
+               Serial.print(pin_num,DEC);
+               Serial.print(" ");
+               pinMode(pin_num,OUTPUT);
+               c=read_single_char();
+               Serial.print("write=");
+               Serial.println( c && 1 , DEC);
+               digitalWrite(pin_num, c && 1);
+            }
+            else{
+                Serial.println("ERROR: wrong pin");
+            }
+        }
+        else if (mode == 0x9F){
+            Serial.print("gpio read ");
+            c=read_single_char();
+            int pin_num;
+            if (get_iopin( &pin_num, c ) == 0 ){
+                Serial.print("pin=");
+                Serial.print(pin_num,DEC);
+                Serial.print(' ');
+                pinMode(pin_num,INPUT);
+                Serial.print("read=");
+                Serial.println( digitalRead(pin_num) , DEC);
+            }
+            else{
+                Serial.println("ERROR: wrong pin");
+            }
+        }
+
         else{
         
         for (int i = 0 ;i < MAXCODELEN; i++){
