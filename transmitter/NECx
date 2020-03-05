@@ -1,0 +1,9 @@
+numbits=32,
+headmark=4512,
+headspace=4512,
+markone=564,
+markszero=564,
+spaceone=1692,
+spacezero=564,
+freq=38,
+usestop=true

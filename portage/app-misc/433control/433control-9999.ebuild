@@ -22,29 +22,29 @@ RDEPEND="${DEPEND} \
 	"
 
 src_install(){
-dobin transmit_serial/rfcc
-dobin transmit_serial/rf
-dobin transmit_serial/gpio
+dobin transmitter/rfcc
+dobin transmitter/rf
+dobin transmitter/gpio
 dodir /usr/share/433control
 insinto /usr/share/433control
-doins record_codes/datacapture_fb1_1_off
-doins record_codes/datacapture_fb1_1_on
-doins record_codes/datacapture_fb1_2_off
-doins record_codes/datacapture_fb1_2_on
-doins record_codes/datacapture_fb1_3_off
-doins record_codes/datacapture_fb1_3_on
-doins record_codes/datacapture_fb1_4_off
-doins record_codes/datacapture_fb1_4_on
-doins record_codes/datacapture_fb1_all_off
-doins record_codes/datacapture_fb1_all_on
-doins record_codes/datacapture_fb2_1_off
-doins record_codes/datacapture_fb2_1_on
-doins record_codes/datacapture_fb2_2_off
-doins record_codes/datacapture_fb2_2_on
-doins record_codes/datacapture_fb2_3_off
-doins record_codes/datacapture_fb2_3_on
-doins record_codes/datacapture_fb2_4_off
-doins record_codes/datacapture_fb2_4_on
-doins record_codes/datacapture_fb2_all_off
-doins record_codes/datacapture_fb2_all_on
+doins codes/433/remote1_btn1_off
+doins codes/433/remote1_btn1_on
+doins codes/433/remote1_btn2_off
+doins codes/433/remote1_btn2_on
+doins codes/433/remote1_btn3_off
+doins codes/433/remote1_btn3_on
+doins codes/433/remote1_btn4_off
+doins codes/433/remote1_btn4_on
+doins codes/433/remote1_btnall_off
+doins codes/433/remote1_btnall_on
+doins codes/433/remote2_btn1_off
+doins codes/433/remote2_btn1_on
+doins codes/433/remote2_btn2_off
+doins codes/433/remote2_btn2_on
+doins codes/433/remote2_btn3_off
+doins codes/433/remote2_btn3_on
+doins codes/433/remote2_btn4_off
+doins codes/433/remote2_btn4_on
+doins codes/433/remote2_btnall_off
+doins codes/433/remote2_btnall_on
 	}

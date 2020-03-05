@@ -35,29 +35,29 @@ byteorder="little"
 baudrate=500000
 port='/dev/ttyACM0'
 codedir="/usr/share/433control"
-codes={    "1_1_0"   :    "datacapture_fb1_1_off"    ,
-           "1_1_1"   :    "datacapture_fb1_1_on"     ,
-           "1_2_0"   :    "datacapture_fb1_2_off"    ,
-           "1_2_1"   :    "datacapture_fb1_2_on"     ,
-           "1_3_0"   :    "datacapture_fb1_3_off"    ,
-           "1_3_1"   :    "datacapture_fb1_3_on"     ,
-           "1_4_0"   :    "datacapture_fb1_4_off"    ,
-           "1_4_1"   :    "datacapture_fb1_4_on"     ,
-           "1_a_0"   :    "datacapture_fb1_all_off"  ,
-           "1_a_1"   :    "datacapture_fb1_all_on"   ,  
-           "2_1_0"   :    "datacapture_fb2_1_off"    ,
-           "2_1_1"   :    "datacapture_fb2_1_on"     ,
-           "2_2_0"   :    "datacapture_fb2_2_off"    ,
-           "2_2_1"   :    "datacapture_fb2_2_on"     ,
-           "2_3_0"   :    "datacapture_fb2_3_off"    ,
-           "2_3_1"   :    "datacapture_fb2_3_on"     ,
-           "2_4_0"   :    "datacapture_fb2_4_off"    ,
-           "2_4_1"   :    "datacapture_fb2_4_on"     ,
-           "2_a_0"   :    "datacapture_fb2_all_off"  ,
-           "2_a_1"   :    "datacapture_fb2_all_on"      }
+codes={    "1_1_0"   :    "remote1_btn1_off"    ,
+           "1_1_1"   :    "remote1_btn1_on"     ,
+           "1_2_0"   :    "remote1_btn2_off"    ,
+           "1_2_1"   :    "remote1_btn2_on"     ,
+           "1_3_0"   :    "remote1_btn3_off"    ,
+           "1_3_1"   :    "remote1_btn3_on"     ,
+           "1_4_0"   :    "remote1_btn4_off"    ,
+           "1_4_1"   :    "remote1_btn4_on"     ,
+           "1_a_0"   :    "remote1_btnall_off"  ,
+           "1_a_1"   :    "remote1_btnall_on"   ,  
+           "2_1_0"   :    "remote2_btn1_off"    ,
+           "2_1_1"   :    "remote2_btn1_on"     ,
+           "2_2_0"   :    "remote2_btn2_off"    ,
+           "2_2_1"   :    "remote2_btn2_on"     ,
+           "2_3_0"   :    "remote2_btn3_off"    ,
+           "2_3_1"   :    "remote2_btn3_on"     ,
+           "2_4_0"   :    "remote2_btn4_off"    ,
+           "2_4_1"   :    "remote2_btn4_on"     ,
+           "2_a_0"   :    "remote2_btnall_off"  ,
+           "2_a_1"   :    "remote2_btnall_on"      }
 
 from sys import exit,argv
-
+fname=None
 for i in argv:
     if i=='-l':
         print("controlable things:")
@@ -73,6 +73,11 @@ for i in argv:
         print("24 : air conditioner")
         print()
         exit(0)
+    elif i=='-f':
+        j=argv.index("-f")
+        if len(argv[j]) > 1:
+            fname=argv[j+1]
+
 
 import serial
 s = serial.Serial(port=port, baudrate=baudrate,timeout=0)
@@ -95,8 +100,9 @@ def decode_args(argv):
 
 
 
-args = decode_args(argv)
-fname=codedir+'/'+codes[args[0]+'_'+args[1]+'_'+args[2]]
+if fname is None:
+    args = decode_args(argv)
+    fname=codedir+'/'+codes[args[0]+'_'+args[1]+'_'+args[2]]
 
 print(fname)
 f=open(fname,'rt')

@@ -3,6 +3,7 @@ ARDUINO_DIR = /usr/share/arduino
 ARDMK_DIR = /code/arduino/Arduino-Makefile
 AVRDUDE = /usr/bin/avrdude
 BOARDS_TXT = /usr/share/arduino/hardware/arduino/avr/boards.txt
+AVRDUDE_OPTS = -v
 ARDUINO_CORE_PATH = /usr/share/arduino/hardware/arduino/avr/cores/arduino
 ARDUINO_VAR_PATH  = /usr/share/arduino/hardware/arduino/avr/variants
 BOARD_TAG    = uno

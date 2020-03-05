@@ -1,0 +1,81 @@
+#!/usr/bin/python3
+# Copyright 2018 Alexander Wilhelmi
+# This file is part of 433control.
+# 
+# 433control is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# 433control is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with 433control.  If not, see <http://www.gnu.org/licenses/>.
+# 
+
+from os.path import exists
+
+if exists ('/etc/has433rf'):
+    pass
+else:
+    from subprocess import call
+    from sys import argv
+    call(["ssh","ec"]+argv)
+    from sys import exit
+    exit()
+
+
+
+intbytes=2
+maxintsize=2**(intbytes*8)
+byteorder="little"
+baudrate=500000
+port='/dev/ttyACM0'
+
+from sys import exit,argv
+
+import serial
+s = serial.Serial(port=port, baudrate=baudrate,timeout=0)
+from time import sleep
+for i in range(3):
+    for i in s.readlines():
+        print(i.decode(errors="replace"))
+    sleep(1) 
+
+
+code = argv[1:]
+print("length: "+ str(len(code)))
+print(code)
+
+hex_18=(0x18).to_bytes(1,'little')
+zero=(0x00).to_bytes(1,'little')
+ff=(0xFF).to_bytes(1,'little')
+hex_a0=(0xa0).to_bytes(1,'little')
+data=[zero,zero,zero,zero,ff,hex_a0]
+s.write(hex_18)
+s.flush()
+sleep(2)
+
+for i in code:
+    a=int(i)
+    if a > maxintsize - 1:
+            raise Exception("value to large")
+    z=a.to_bytes(intbytes,byteorder,signed=False)
+    z0=z[0].to_bytes(1,byteorder,signed=False)
+    z1=z[1].to_bytes(1,byteorder,signed=False)
+    data.append(z1)
+    data.append(z0)
+
+data+=[zero,zero]
+for d in data:
+    print(d)
+    s.write(d)
+s.flush()
+
+for i in s.readlines():
+    print(i.decode(errors="replace"))
+
+s.close()
