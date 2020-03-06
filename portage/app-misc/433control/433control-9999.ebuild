@@ -24,6 +24,7 @@ RDEPEND="${DEPEND} \
 src_install(){
 dobin transmitter/rfcc
 dobin transmitter/rf
+dobin transmitter/ir
 dobin transmitter/gpio
 dodir /usr/share/433control
 insinto /usr/share/433control
