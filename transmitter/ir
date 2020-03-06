@@ -16,6 +16,7 @@
 # along with 433control.  If not, see <http://www.gnu.org/licenses/>.
 # 
 
+SERIAL_BAUDRATE=500000
 from os.path import exists
 
 if exists ('/etc/has433rf'):
@@ -32,13 +33,13 @@ else:
 intbytes=2
 maxintsize=2**(intbytes*8)
 byteorder="little"
-baudrate=500000
+SERIAL_BAUDRATE=500000
 port='/dev/ttyACM0'
 
 from sys import exit,argv
 
 import serial
-s = serial.Serial(port=port, baudrate=baudrate,timeout=0)
+s = serial.Serial(port=port, baudrate=SERIAL_BAUDRATE,timeout=0)
 from time import sleep
 for i in range(3):
     for i in s.readlines():

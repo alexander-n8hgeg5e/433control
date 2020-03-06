@@ -1,8 +1,12 @@
+#define SERIAL_BAUDRATE 500000
 #define   TXPIN 6
 #define IRTXPIN 9
 #define MAXCODELEN 500
 #define numberdatatype unsigned short
 #define NODE_ID          1
+
+#define BIT_IS1(var,pos) ((var) & (1<<(pos)))
+#define BITMASKED_IS(var,mask,cmpval,shift) (((var) & ((mask)<<(pos))) == ((cmpval) << (pos)))
 
 #include <RFTransmitter.h>
 RFTransmitter transmitter(TXPIN, NODE_ID);
@@ -28,6 +32,7 @@ int r0b;
 int tccr0b;
 int tccr0a;
 int timsk0;
+unsigned int verbosity=0;
 
 
 numberdatatype read(){
@@ -234,24 +239,7 @@ int wait_FFXX(){
                             while (true){
                                   if (Serial.available() > 0){
                                        c = Serial.read();
-                                       if (c==0xFF){
-                                           return 0xFF;
-                                       }
-                                       if (c==0x7F){
-                                           return 0x7F;
-                                       }
-                                       if (c==0x8F){
-                                           return 0x8F;
-                                       }
-                                       if (c==0x9F){
-                                           return 0x9F;
-                                       }
-                                       if (c==0xA0){
-                                           return 0xA0;
-                                       }
-                                       else{
-                                           break;
-                                       }
+                                       return c;
                                   }
                             }
                      }
@@ -278,8 +266,8 @@ int get_iopin(int * write_pinnum, char c){
 	}
 
 void setup() {
-	Serial.begin(500000);
-	Serial.println("serial on");
+	Serial.begin(SERIAL_BAUDRATE);
+    if ( verbosity >= 8 ){Serial.println("serial on");}
         //Serial.println("code transmitter online. send code to serial. \n reset with 2 zero byte.");
         //Serial.println("maxcodelen= " + MAXCODELEN )
 	//setup_ir_pwm();
@@ -290,47 +278,62 @@ void loop() {
         //Serial.println("waiting for 0xFFFF or 0xFF7F");
         mode=wait_FFXX();
         if (mode == 0x7F){
-            Serial.println("one-character-send-mode active");
+            if ( verbosity >= 7 ){Serial.println("one-character-send-mode active");}
             c = read_single_char();
             rr[0] = c;
             transmitter.send( rr , 1 );
-            Serial.print("byte transmitted: ");
-            Serial.println(rr[0]);
+            if ( verbosity >= 7 ){Serial.print("byte transmitted: ");}
+            if ( verbosity >= 7 ){Serial.println(rr[0]);}
                }
         else if (mode == 0x8F){
-            Serial.print("gpio out ");
+            if ( verbosity >= 7 ){Serial.print("gpio out ");}
             c=read_single_char();
             int pin_num;
             if (get_iopin( &pin_num, c ) == 0 ){
-               Serial.print("pin=");
-               Serial.print(pin_num,DEC);
-               Serial.print(" ");
+               if ( verbosity >= 7 ){Serial.print("pin=");}
+               if ( verbosity >= 7 ){Serial.print(pin_num,DEC);}
+               if ( verbosity >= 7 ){Serial.print(" ");}
                pinMode(pin_num,OUTPUT);
                c=read_single_char();
-               Serial.print("write=");
-               Serial.println( c && 1 , DEC);
+               if ( verbosity >= 7 ){Serial.print("write=");}
+               if ( verbosity >= 7 ){Serial.println( c && 1 , DEC);}
                digitalWrite(pin_num, c && 1);
             }
             else{
-                Serial.println("ERROR: wrong pin");
+                if ( verbosity >= 7 ){Serial.println("ERROR: wrong pin");}
             }
         }
         else if (mode == 0x9F){
-            Serial.print("gpio read ");
+            if ( verbosity >= 7 ){Serial.print("gpio read ");}
             c=read_single_char();
             int pin_num;
             if (get_iopin( &pin_num, c ) == 0 ){
-                Serial.print("pin=");
-                Serial.print(pin_num,DEC);
-                Serial.print(' ');
+                if ( verbosity >= 7 ){ Serial.print("pin=");}
+                if ( verbosity >= 7 ){ Serial.print(pin_num,DEC);}
+                if ( verbosity >= 7 ){ Serial.print(' ');}
                 pinMode(pin_num,INPUT);
+                // need to print this irrespective of verbosity
                 Serial.print("read=");
                 Serial.println( digitalRead(pin_num) , DEC);
             }
             else{
-                Serial.println("ERROR: wrong pin");
+                if ( verbosity >= 4 ){Serial.println("ERROR: wrong pin");}
             }
         }
+
+        else if (mode == 0xA1){
+            //if ( verbosity != 0 ){Serial.println("config mode");}
+            Serial.println("config mode");
+            c=read_single_char();
+            if ( (c & 0b11110000 ) == 0b00010000) {
+                // set verbosity
+                verbosity = (c & 0b00001111) ;
+                }
+            //if ( verbosity != 0 ){
+                Serial.print("new verbosity=");
+                Serial.println(verbosity);
+              //  }
+            }
 
         else{
         
@@ -338,7 +341,7 @@ void loop() {
 			  a = read();
 			      if ( a == 0 ){
 			                   code[i]=0;
-			                   Serial.println("received double0. done capturing.");
+			                   if ( verbosity >= 7 ){Serial.println("received zero byte, done capturing.");}
 			                   break;
 			      }
 			      else{
@@ -349,11 +352,11 @@ void loop() {
 			//printcode();
 			
 			if (mode == 0xA0){
-				Serial.println("transmitting ir...");
+				if ( verbosity >= 7 ){Serial.println("transmitting ir...");}
 				transmit_ir();
 			}
 			else{
-				Serial.println("transmitting 433Mhz rf...");
+				if ( verbosity >= 7 ){Serial.println("transmitting 433Mhz rf...");}
 				transmit_rf();
 			}
     }
