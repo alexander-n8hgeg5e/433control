@@ -69,6 +69,7 @@ from argparse import ArgumentParser
 ap=ArgumentParser()
 ap.add_argument("-w","--write",action='store_true',default=False)
 ap.add_argument("-r","--read",action='store_true',default=True)
+ap.add_argument("-p","--pullup",action='store',type=int,choices=[0,1],default=0)
 ap.add_argument(dest="pin", nargs=1, type=str )
 ap.add_argument(dest="data",nargs='?',default=None,type=int)
 args=ap.parse_args()
@@ -89,7 +90,7 @@ if args.write:
     data=zero+zero+zero+ff+hex_8f+args.pin[0].encode('ascii')+args.data.to_bytes(1,'little')
 elif args.read:
     hex_9f=(0x9F).to_bytes(1,'little')
-    data=zero+zero+zero+ff+hex_9f+args.pin[0].encode('ascii')
+    data=zero+zero+zero+ff+hex_9f+args.pin[0].encode('ascii')+args.pullup.to_bytes(1,"little")
 else:
     raise Exception("ERROR: need one arg from [read,write]")
 s.write(hex_18)

@@ -271,6 +271,10 @@ void setup() {
         //Serial.println("code transmitter online. send code to serial. \n reset with 2 zero byte.");
         //Serial.println("maxcodelen= " + MAXCODELEN )
 	//setup_ir_pwm();
+
+    // switch led off
+    pinMode(13,OUTPUT);
+    digitalWrite(13,0);
 	}
 
 void loop() {
@@ -312,6 +316,8 @@ void loop() {
                 if ( verbosity >= 7 ){ Serial.print(pin_num,DEC);}
                 if ( verbosity >= 7 ){ Serial.print(' ');}
                 pinMode(pin_num,INPUT);
+                c=read_single_char();
+                digitalWrite(pin_num, c && 1);
                 // need to print this irrespective of verbosity
                 Serial.print("read=");
                 Serial.println( digitalRead(pin_num) , DEC);
