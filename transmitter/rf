@@ -58,12 +58,14 @@ codes={    "1_1_0"   :    "remote1_btn1_off"    ,
            "2_a_0"   :    "remote2_btnall_off"  ,
            "2_a_1"   :    "remote2_btnall_on"      }
 
-def decode_args(argv):
-    args = argv[1]
-    for i in range(2,len(argv)):
+def decode_args(argv,nr_consumed):
+    args = argv[nr_consumed+1]
+    print("args="+str(args))
+    for i in range(nr_consumed+2,len(argv)):
         args = args + argv[i]
         args = args.strip()
         args = args.replace(" ","")
+    print("args="+str(args))
     if len(args) == 3:
         return args
     else:
@@ -71,6 +73,8 @@ def decode_args(argv):
 
 from sys import exit,argv
 fname=None
+quiet=False
+nr_consumed=0
 for i in argv:
     if i=='-l':
         print("controlable things:")
@@ -86,17 +90,25 @@ for i in argv:
         print("24 : air conditioner")
         print()
         exit(0)
-    elif i=='-f':
+    elif i[:2]=='-f':
         j=argv.index("-f")
         if len(argv[j]) > 1:
             fname=argv[j+1]
+            nr_consumed+=2
+        else:
+            fname=i[2:]
+            nr_consumed+=1
+    elif i=='-q':
+        nr_consumed+=1
+        quiet=True
 
 
 import serial
 s = serial.Serial(port=port, baudrate=SERIAL_BAUDRATE,timeout=0)
 
 from time import sleep
-print("waiting "+str(SERIAL_WAIT_READY)+" sec for the serial to get ready... ",end="")
+if not quiet:
+    print("waiting "+str(SERIAL_WAIT_READY)+" sec for the serial to get ready... ",end="")
 sleep(1.8)
 print("done")
 txt=s.read_all().decode(errors="replace").strip()
@@ -105,7 +117,7 @@ if len(txt)>0:
 
 
 if fname is None:
-    args = decode_args(argv)
+    args = decode_args(argv,nr_consumed)
     fname=codedir+'/'+codes[args[0]+'_'+args[1]+'_'+args[2]]
 
 ##print("code = "+fname.split("/")[-1])
