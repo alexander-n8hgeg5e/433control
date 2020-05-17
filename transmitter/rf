@@ -60,12 +60,10 @@ codes={    "1_1_0"   :    "remote1_btn1_off"    ,
 
 def decode_args(argv,nr_consumed):
     args = argv[nr_consumed+1]
-    print("args="+str(args))
     for i in range(nr_consumed+2,len(argv)):
         args = args + argv[i]
         args = args.strip()
         args = args.replace(" ","")
-    print("args="+str(args))
     if len(args) == 3:
         return args
     else:
