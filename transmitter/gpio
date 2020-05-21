@@ -67,11 +67,12 @@ import serial
 from sys import argv
 from argparse import ArgumentParser
 ap=ArgumentParser()
-ap.add_argument("-w","--write",action='store_true',default=False)
-ap.add_argument("-r","--read",action='store_true',default=True)
+ap.add_argument("-w","--write",action='store', type=str,  default=None)
+ap.add_argument("-r","--read",action='store',  type=str,  default=None)
+ap.add_argument("-a","--aread",action='store', type=str, default=None)
 ap.add_argument("-p","--pullup",action='store',type=int,choices=[0,1],default=0)
-ap.add_argument(dest="pin", nargs=1, type=str )
-ap.add_argument(dest="data",nargs='?',default=None,type=int)
+ap.add_argument("-c","--config-mode", action='store', type=int)
+ap.add_argument(dest="data",nargs='?' ,default=None, type=int)
 args=ap.parse_args()
 
 s = serial.Serial(port='/dev/ttyACM0', baudrate=baudrate,timeout=0)
@@ -85,12 +86,18 @@ for i in range(2):
 hex_18=(0x18).to_bytes(1,'little')
 zero=(0x00).to_bytes(1,'little')
 ff=(0xFF).to_bytes(1,'little')
-if args.write:
+if not args.write is None:
     hex_8f=(0x8F).to_bytes(1,'little')
-    data=zero+zero+zero+ff+hex_8f+args.pin[0].encode('ascii')+args.data.to_bytes(1,'little')
-elif args.read:
+    data=zero+zero+zero+ff+hex_8f+args.write.encode('ascii')+args.data.to_bytes(1,'little')
+elif not args.read is None:
     hex_9f=(0x9F).to_bytes(1,'little')
-    data=zero+zero+zero+ff+hex_9f+args.pin[0].encode('ascii')+args.pullup.to_bytes(1,"little")
+    data=zero+zero+zero+ff+hex_9f+args.read.encode('ascii')+args.pullup.to_bytes(1,"little")
+elif not args.aread is None:
+    hex_a2=(0xA2).to_bytes(1,'little')
+    data=zero+zero+zero+ff+hex_a2+args.aread.encode('ascii')+args.pullup.to_bytes(1,"little")
+elif not args.config_mode is None:
+    hex_a1=(0xA1).to_bytes(1,'little')
+    data=zero+zero+zero+ff+hex_a1+args.config_mode.to_bytes(1,'little')
 else:
     raise Exception("ERROR: need one arg from [read,write]")
 s.write(hex_18)

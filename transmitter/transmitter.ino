@@ -341,6 +341,26 @@ void loop() {
               //  }
             }
 
+        else if (mode == 0xA2){
+            if ( verbosity >= 7 ){Serial.print("analog read ");}
+            c=read_single_char();
+            int pin_num;
+            if (get_iopin( &pin_num, c ) == 0 ){
+                if ( verbosity >= 7 ){ Serial.print("pin=");}
+                if ( verbosity >= 7 ){ Serial.print(pin_num,DEC);}
+                if ( verbosity >= 7 ){ Serial.print(' ');}
+                pinMode(pin_num,INPUT);
+                c=read_single_char();
+                digitalWrite(pin_num, c && 1);
+                // need to print this irrespective of verbosity
+                Serial.print("aread=");
+                Serial.println( analogRead(pin_num) , DEC);
+            }
+            else{
+                if ( verbosity >= 4 ){Serial.println("ERROR: wrong pin");}
+            }
+        }
+
         else{
         
 			for (int i = 0 ;i < MAXCODELEN; i++){
@@ -369,4 +389,4 @@ void loop() {
 	}
 
 
-// vim: set foldlevel=0 foldmethod=indent foldnestmax=1 :
+// vim: set foldlevel=0 foldmethod=indent foldnestmax=3 :
