@@ -9,8 +9,11 @@
 #define BITMASKED_IS(var,mask,cmpval,shift) (((var) & ((mask)<<(pos))) == ((cmpval) << (pos)))
 
 #include <RFTransmitter.h>
-RFTransmitter transmitter(TXPIN, NODE_ID);
+#include <Wire.h>
+#include <SPI.h>
+#include <Adafruit_BMP280.h>
 
+RFTransmitter transmitter(TXPIN, NODE_ID);
 
 numberdatatype code[MAXCODELEN];
 numberdatatype a;
@@ -33,7 +36,9 @@ int tccr0b;
 int tccr0a;
 int timsk0;
 unsigned int verbosity=0;
-
+Adafruit_BMP280 bmp;
+Adafruit_Sensor *bmp_temp = bmp.getTemperatureSensor();
+Adafruit_Sensor *bmp_pressure = bmp.getPressureSensor();
 
 numberdatatype read(){
         while (true){
@@ -265,6 +270,22 @@ int get_iopin(int * write_pinnum, char c){
     return 1;
 	}
 
+void print_temp() {
+    sensors_event_t temp_event, pressure_event;
+    bmp_temp->getEvent(&temp_event);
+    bmp_pressure->getEvent(&pressure_event);
+    Serial.print("T=");
+    Serial.println(temp_event.temperature);
+    }
+
+void print_pressure() {
+    sensors_event_t temp_event, pressure_event;
+    bmp_temp->getEvent(&temp_event);
+    bmp_pressure->getEvent(&pressure_event);
+    Serial.print("p=");
+    Serial.println(pressure_event.pressure);
+    }
+
 void setup() {
 	Serial.begin(SERIAL_BAUDRATE);
     if ( verbosity >= 8 ){Serial.println("serial on");}
@@ -275,7 +296,21 @@ void setup() {
     // switch led off
     pinMode(13,OUTPUT);
     digitalWrite(13,0);
+
+    /*
+        init bmp280 sensor
+    */
+    if ( ! bmp.begin( BMP280_ADDRESS_ALT, 0x60 ) ) {
+        Serial.println("Could not find a valid BMP280 sensor, check wiring!");
 	}
+    /* Default settings from datasheet. */
+    bmp.setSampling(Adafruit_BMP280::MODE_NORMAL,     /* Operating Mode. */
+                    Adafruit_BMP280::SAMPLING_X2,     /* Temp. oversampling */
+                    Adafruit_BMP280::SAMPLING_X16,    /* Pressure oversampling */
+                    Adafruit_BMP280::FILTER_X16,      /* Filtering. */
+                    Adafruit_BMP280::STANDBY_MS_500); /* Standby time. */
+    //bmp_temp->printSensorDetails();
+}
 
 void loop() {
         int mode;
@@ -359,6 +394,14 @@ void loop() {
             else{
                 if ( verbosity >= 4 ){Serial.println("ERROR: wrong pin");}
             }
+        }
+        else if (mode == 0xA3){
+            if ( verbosity >= 7 ){Serial.print("read temperature ");}
+            print_temp();
+        }
+        else if (mode == 0xA4){
+            if ( verbosity >= 7 ){Serial.print("read pressure ");}
+            print_pressure();
         }
 
         else{
