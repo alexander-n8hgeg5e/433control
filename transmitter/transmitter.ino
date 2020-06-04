@@ -37,8 +37,13 @@ int tccr0a;
 int timsk0;
 unsigned int verbosity=0;
 Adafruit_BMP280 bmp;
-Adafruit_Sensor *bmp_temp = bmp.getTemperatureSensor();
-Adafruit_Sensor *bmp_pressure = bmp.getPressureSensor();
+float pressure;
+float temp;
+#define MEASURE_MODE Adafruit_BMP280::MODE_NORMAL
+#define FILTER_MODE Adafruit_BMP280::FILTER_OFF
+#define STANDBY_TIME Adafruit_BMP280::STANDBY_MS_1
+uint8_t osrs_t = (uint8_t)Adafruit_BMP280::SAMPLING_X1;
+uint8_t osrs_p = (uint8_t)Adafruit_BMP280::SAMPLING_X1;
 
 numberdatatype read(){
         while (true){
@@ -271,19 +276,45 @@ int get_iopin(int * write_pinnum, char c){
 	}
 
 void print_temp() {
-    sensors_event_t temp_event, pressure_event;
-    bmp_temp->getEvent(&temp_event);
-    bmp_pressure->getEvent(&pressure_event);
+    temp=bmp.readTemperature();
     Serial.print("T=");
-    Serial.println(temp_event.temperature);
+    Serial.println(temp);
     }
 
 void print_pressure() {
-    sensors_event_t temp_event, pressure_event;
-    bmp_temp->getEvent(&temp_event);
-    bmp_pressure->getEvent(&pressure_event);
+    pressure=bmp.readPressure();
     Serial.print("p=");
-    Serial.println(pressure_event.pressure);
+    Serial.println(pressure);
+    }
+
+void set_sampling(){
+    bmp.setSampling(MEASURE_MODE,      /* Operating Mode. */
+                    (Adafruit_BMP280::sensor_sampling)osrs_t,            /* Temp. oversampling */
+                    (Adafruit_BMP280::sensor_sampling)osrs_p,            /* Pressure oversampling */
+                    FILTER_MODE,       /* Filtering. */
+                    STANDBY_TIME);     /* Standby time. */
+    }
+
+void init_temp_sensor(){
+    /*
+        init bmp280 sensor
+    */
+    if ( ! bmp.begin( BMP280_ADDRESS_ALT, 0x60 ) ) {
+        Serial.println("Could not find a valid BMP280 sensor, check wiring!");
+	}
+    set_sampling();
+    //bmp_temp->printSensorDetails();
+    }
+
+
+void set_temp_sampling(uint8_t _osrs_t){
+    osrs_t = _osrs_t;
+    set_sampling();
+    }
+
+void set_pressure_sampling(uint8_t _osrs_p){
+    osrs_p = _osrs_p;
+    set_sampling();
     }
 
 void setup() {
@@ -297,20 +328,8 @@ void setup() {
     pinMode(13,OUTPUT);
     digitalWrite(13,0);
 
-    /*
-        init bmp280 sensor
-    */
-    if ( ! bmp.begin( BMP280_ADDRESS_ALT, 0x60 ) ) {
-        Serial.println("Could not find a valid BMP280 sensor, check wiring!");
-	}
-    /* Default settings from datasheet. */
-    bmp.setSampling(Adafruit_BMP280::MODE_NORMAL,     /* Operating Mode. */
-                    Adafruit_BMP280::SAMPLING_X2,     /* Temp. oversampling */
-                    Adafruit_BMP280::SAMPLING_X16,    /* Pressure oversampling */
-                    Adafruit_BMP280::FILTER_X16,      /* Filtering. */
-                    Adafruit_BMP280::STANDBY_MS_500); /* Standby time. */
-    //bmp_temp->printSensorDetails();
-}
+    init_temp_sensor();
+    }
 
 void loop() {
         int mode;
@@ -363,17 +382,40 @@ void loop() {
         }
 
         else if (mode == 0xA1){
-            //if ( verbosity != 0 ){Serial.println("config mode");}
-            Serial.println("config mode");
+            if ( verbosity >= 7 ){
+                Serial.print("config mode, ");
+                }
             c=read_single_char();
-            if ( (c & 0b11110000 ) == 0b00010000) {
+            if ( verbosity >= 7 ){
+                Serial.print("data=");
+                Serial.println(c);
+                }
+            if ( (c & 0b11110000 ) == (0b0001<<4 | 0b0000)) {
                 // set verbosity
                 verbosity = (c & 0b00001111) ;
+                if ( verbosity >= 7 ){
+                    Serial.print("new verbosity=");
+                    Serial.println(verbosity);
+                    }
                 }
-            //if ( verbosity != 0 ){
-                Serial.print("new verbosity=");
-                Serial.println(verbosity);
-              //  }
+            else if ( (c & 0b11110000 ) == (0b0010<<4 | 0b0000)) {
+                // set temp_sampling
+                osrs_t = c & 0b00001111;
+                set_sampling();
+                if ( verbosity >= 7 ){
+                    Serial.print("new temp sampling: ");
+                    Serial.println(osrs_t);
+                    }
+                }
+            else if ( (c & 0b11110000 ) == (0b0011<<4 | 0b0000)) {
+                // set pressure_sampling
+                osrs_p = c & 0b00001111;
+                set_sampling();
+                if ( verbosity >= 7 ){
+                    Serial.print("new pressure sampling: ");
+                    Serial.println(osrs_p);
+                    }
+                }
             }
 
         else if (mode == 0xA2){

@@ -84,7 +84,7 @@ from time import sleep
 for i in range(2):
     for i in s.readlines():
         print(i.decode(errors="replace"))
-    sleep(2) 
+    sleep(1) 
 hex_18=(0x18).to_bytes(1,'little')
 zero=(0x00).to_bytes(1,'little')
 ff=(0xFF).to_bytes(1,'little')
