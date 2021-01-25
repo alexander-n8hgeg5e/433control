@@ -4,7 +4,7 @@ EAPI=6
 
 LICENSE=""
 
-PYTHON_COMPAT=( python3_{5,6} )
+PYTHON_COMPAT=( python3_{5,6,7,8,9} )
 EGIT_REPO_URI="${CODEDIR}/${PN} ${MYGITHUB_URIBASE}${PN}.git"
 inherit git-r3 python-r1
 
