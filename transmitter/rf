@@ -56,7 +56,17 @@ codes={    "1_1_0"   :    "remote1_btn1_off"    ,
            "2_4_0"   :    "remote2_btn4_off"    ,
            "2_4_1"   :    "remote2_btn4_on"     ,
            "2_a_0"   :    "remote2_btnall_off"  ,
-           "2_a_1"   :    "remote2_btnall_on"      }
+           "2_a_1"   :    "remote2_btnall_on"   ,
+           "3_1_1"   :    "remote3_btn1_on"     ,   
+           "3_1_0"   :    "remote3_btn1_off"    ,   
+           "3_2_1"   :    "remote3_btn2_on"     ,   
+           "3_2_0"   :    "remote3_btn2_off"    ,   
+           "3_3_1"   :    "remote3_btn3_on"     ,   
+           "3_3_0"   :    "remote3_btn3_off"    ,   
+           "3_4_1"   :    "remote3_btn4_on"     ,   
+           "3_4_0"   :    "remote3_btn4_off"    ,   
+
+        }
 
 def decode_args(argv,nr_consumed):
     args = argv[nr_consumed+1]

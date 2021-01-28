@@ -48,4 +48,12 @@ doins codes/433/remote2_btn4_off
 doins codes/433/remote2_btn4_on
 doins codes/433/remote2_btnall_off
 doins codes/433/remote2_btnall_on
+doins codes/433/remote3_btn1_on
+doins codes/433/remote3_btn1_off
+doins codes/433/remote3_btn2_on
+doins codes/433/remote3_btn2_off
+doins codes/433/remote3_btn3_on
+doins codes/433/remote3_btn3_off
+doins codes/433/remote3_btn4_on
+doins codes/433/remote3_btn4_off
 	}
