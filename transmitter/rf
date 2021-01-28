@@ -18,17 +18,107 @@
 
 SERIAL_WAIT_READY=1.8
 SERIAL_BAUDRATE=500000
+RF_NODES_ENV_KEY = 'RF_NODES'
+NODES_LIST_FILE = '/etc/nodelist'
 
+
+
+#
+# argument parsing
+#
 from os.path import exists
+from sys import exit,argv
+fname=None
+quiet=False
+only_local=False
+verbose=False
+
+nr_consumed=0
+for i in argv:
+    if i=='-l':
+        print("controlable things:")
+        print()
+        print("11 : light")
+        print("12 : room ventilation fan")
+        print("13 : led strip")
+        print("14 : intense light")
+        print()
+        print("21 : dusteater")
+        print("22 : ?")
+        print("23 : ?")
+        print("24 : air conditioner")
+        print()
+        exit(0)
+    elif i[:2]=='-f':
+        j=argv.index("-f")
+        if len(argv[j]) > 1:
+            fname=argv[j+1]
+            nr_consumed+=2
+        else:
+            fname=i[2:]
+            nr_consumed+=1
+    elif i=='-q':
+        nr_consumed+=1
+        quiet=True
+        verbose=False
+    elif i=='-v':
+        nr_consumed+=1
+        quiet=False
+        verbose=True
+    elif i=='-L':
+        nr_consumed+=1
+        only_local=True
+
+#
+# check local/remote
+# and in case of remote stop here
+# and call this program on the remote node
+#
+if verbose:    
+    from socket import gethostname
 
 if exists ('/etc/has433rf'):
+    if verbose:
+        print(f'{gethostname()} has rf')
     pass
-else:
+elif only_local:
+    if verbose:
+        print(f'{gethostname()} has no rf')
+    exit(1)
+else: # call remote
+    if verbose:
+        print(f'{gethostname()} has no rf , calls remote ...')
     from subprocess import call
     from sys import argv
-    call(["ssh","ec"]+argv)
+    from os import environ
+    
+    # fix annoying warning
+    if 'LD_PRELOAD' in environ.keys():
+        from re import sub
+        environ['LD_PRELOAD'] = sub("[^ ]+libswmhack[^ ]+","",environ['LD_PRELOAD'])
+    if RF_NODES_ENV_KEY in environ.keys():
+        rf_nodes = environ[RF_NODES_ENV_KEY].split(' ')
+    else:
+        with open(NODES_LIST_FILE) as nlf:
+            if not verbose:
+                from socket import gethostname
+            rf_nodes = [node.strip() for node in nlf.read().split('\n')]
+            rf_nodes.remove(gethostname())
+            while '' in rf_nodes:
+                rf_nodes.remove('')
+            #rf_nodes.reverse()
+    if verbose:
+        print(f"rf_nodes are {rf_nodes}")
+    node_index = 0
+    try:
+        while not call(["ssh",rf_nodes[node_index] , argv[0], '-L' ] + (argv[1:] if len(argv) > 0 else [])) == 0 :
+            node_index+=1
+    except IndexError:
+        from sys import stderr
+        print(f"node index = {node_index}",file=stderr)
+        raise
     from sys import exit
-    exit()
+    exit(0)
 
 
 
@@ -77,38 +167,12 @@ def decode_args(argv,nr_consumed):
     if len(args) == 3:
         return args
     else:
+        if not verbose:
+            global gethostname
+            from socket import gethostname
+        from sys import stderr
+        print(f"node {gethostname()} did not understand args:\nargv={argv}\nnr_consumed={nr_consumed}",file=stderr)
         raise Exception("did not understand args")
-
-from sys import exit,argv
-fname=None
-quiet=False
-nr_consumed=0
-for i in argv:
-    if i=='-l':
-        print("controlable things:")
-        print()
-        print("11 : light")
-        print("12 : room ventilation fan")
-        print("13 : led strip")
-        print("14 : intense light")
-        print()
-        print("21 : dusteater")
-        print("22 : ?")
-        print("23 : ?")
-        print("24 : air conditioner")
-        print()
-        exit(0)
-    elif i[:2]=='-f':
-        j=argv.index("-f")
-        if len(argv[j]) > 1:
-            fname=argv[j+1]
-            nr_consumed+=2
-        else:
-            fname=i[2:]
-            nr_consumed+=1
-    elif i=='-q':
-        nr_consumed+=1
-        quiet=True
 
 
 import serial
@@ -118,7 +182,8 @@ from time import sleep
 if not quiet:
     print("waiting "+str(SERIAL_WAIT_READY)+" sec for the serial to get ready... ",end="")
 sleep(1.8)
-print("done")
+if verbose:
+    print("done")
 txt=s.read_all().decode(errors="replace").strip()
 if len(txt)>0:
     print(txt)
