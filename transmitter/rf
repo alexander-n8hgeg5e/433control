@@ -155,6 +155,12 @@ codes={    "1_1_0"   :    "remote1_btn1_off"    ,
            "3_3_0"   :    "remote3_btn3_off"    ,   
            "3_4_1"   :    "remote3_btn4_on"     ,   
            "3_4_0"   :    "remote3_btn4_off"    ,   
+           "4_1_1"   :    "remote4_btn1_on"    ,   
+           "4_1_0"   :    "remote4_btn1_off"    ,   
+           "4_2_1"   :    "remote4_btn2_on"    ,   
+           "4_2_0"   :    "remote4_btn2_off"    ,   
+           "4_3_1"   :    "remote4_btn3_on"    ,   
+           "4_3_0"   :    "remote4_btn3_off"    ,   
 
         }
 

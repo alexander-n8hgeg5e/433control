@@ -124,6 +124,8 @@ def  remove_repeating_stuff(d):
         d=d[:y]+d[y+m:]
     return d
 
+MEGA_SAMPLE_RATE=8
+
 with open(args.file,'rb') as f: 
      data0=f.read()                
 
@@ -131,27 +133,33 @@ y=0
 data1=[]                          
 for i in range(1,len(data0)):    
     if data0[i-1] != data0[i]:      
-        data1.append(i-y)
+        data1.append(int((i-y)/MEGA_SAMPLE_RATE))
         y=i
 
+# raw print
+print(f"raw start: {data1[:10]} ... ",file=stderr)
+
 # fix long first value
-m=max(data1[1:])
-data1[0]=min(m,data1[0])
-print(data1[:5],file=stderr)
-print(data1[-5:],file=stderr)
-print("len data = {}".format(len(data1)),file=stderr)
+#m=max(data1[1:])
+#data1[0]=min(m,data1[0])
+#print(data1[:5],file=stderr)
+#print(data1[-5:],file=stderr)
+#print("len data = {}".format(len(data1)),file=stderr)
 
 
-# clean values
-avg = sum(data1)/len(data1)
-distance = 0.05 * avg
-print("distance = {}".format(distance),file=stderr)
-classes = gen_classes(data1,distance)
-classes=[int(round(i,0)) for i in classes]
-print_classes(classes,file=stderr)
-data2=[val2cls(v,classes,distance) for v in data1 ]
+## clean values
+#avg = sum(data1)/len(data1)
+#distance = 0.05 * avg
+#print("distance = {}".format(distance),file=stderr)
+#classes = gen_classes(data1,distance)
+#classes=[int(round(i,0)) for i in classes]
+#print_classes(classes,file=stderr)
+#data2=[val2cls(v,classes,distance) for v in data1 ]
 
-    
+# invert
+data2 = [3000] + data1    
+print(f"inverted start: {data2[:10]} ... ",file=stderr)
+
 data2=data2[:args.limit]
 print("sum-time={}".format(sum(data2)),file=stderr)
 print(" ".join([str(i) for i in data2]),end="")
