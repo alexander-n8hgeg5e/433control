@@ -21,10 +21,10 @@ RDEPEND="${DEPEND} \
 	"
 
 src_install(){
-dobin transmitter/rfcc
-dobin transmitter/rf
-dobin transmitter/ir
-dobin transmitter/gpio
+python_foreach_impl python_doscript transmitter/rfcc
+python_foreach_impl python_doscript transmitter/rf
+python_foreach_impl python_doscript transmitter/ir
+python_foreach_impl python_doscript transmitter/gpio
 dodir /usr/share/433control
 insinto /usr/share/433control
 doins codes/433/remote1_btn1_off
