@@ -10,8 +10,7 @@ inherit git-r3 python-r1
 
 DESCRIPTION="control the stuff in the house "
 HOMEPAGE=""
-
-LICENSE=""
+LICENSE="GPL-3"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
 IUSE=""
