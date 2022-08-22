@@ -1,7 +1,12 @@
 # Arduino Make file. Refer to https://github.com/sudar/Arduino-Makefile
 ARDUINO_DIR = /usr/share/arduino
-ARDMK_DIR = /code/arduino/Arduino-Makefile
-AVRDUDE = /usr/bin/avrdude
+ARDMK_DIR = /var/src/arduino/Arduino-Makefile
+AVRDUDE = ssh wb avrdude
+RESET_CMD = ssh wb /var/src/arduino/Arduino-Makefile/bin/ard-reset-arduino --caterina /dev/ttyACM0
+OBJDIR = $(shell realpath .)/build-uno
+MONITOR_PORT = /dev/ttyACM0
+FORCE_MONITOR_PORT=1
+AVRDUDE_ARD_PROGRAMMER = arduino
 BOARDS_TXT = /usr/share/arduino/hardware/arduino/avr/boards.txt
 AVRDUDE_OPTS = -v
 ARDUINO_CORE_PATH = /usr/share/arduino/hardware/arduino/avr/cores/arduino
@@ -19,5 +24,6 @@ OBJDUMP = $(OBJDUMP_NAME)
 AR      = $(AR_NAME)
 SIZE    = $(SIZE_NAME)
 NM      = $(NM_NAME)
-ARDUINO_VERSION = $(shell arduino --version 2>/dev/null| cut -d " " -f2 |tr -d '.' )
-include /code/arduino/Arduino-Makefile/Arduino.mk
+#ARDUINO_VERSION = $(shell arduino --version 2>/dev/null | grep -o -E '\'Arduino:.*$\'' | grep -o -E '[.0-9]+')
+ARDUINO_VERSION = 187
+include /var/src/arduino/Arduino-Makefile/Arduino.mk
