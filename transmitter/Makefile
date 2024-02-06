@@ -2,9 +2,9 @@
 ARDUINO_DIR = /usr/share/arduino
 ARDMK_DIR = /var/src/arduino/Arduino-Makefile
 AVRDUDE = ssh wb avrdude
-RESET_CMD = ssh wb /var/src/arduino/Arduino-Makefile/bin/ard-reset-arduino --caterina /dev/ttyACM0
+MONITOR_PORT = $(shell ssh wb echo /dev/ttyACM\*)
+RESET_CMD = ssh wb /var/src/arduino/Arduino-Makefile/bin/ard-reset-arduino --caterina $(MONITOR_PORT)
 OBJDIR = $(shell realpath .)/build-uno
-MONITOR_PORT = /dev/ttyACM0
 FORCE_MONITOR_PORT=1
 AVRDUDE_ARD_PROGRAMMER = arduino
 BOARDS_TXT = /usr/share/arduino/hardware/arduino/avr/boards.txt
