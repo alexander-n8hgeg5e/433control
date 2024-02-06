@@ -12,6 +12,24 @@
 #include <Wire.h>
 #include <SPI.h>
 #include <Adafruit_BMP280.h>
+#include <Arduino.h>         
+#include <binary.h>          
+#include <WCharacter.h>      
+#include <WString.h>         
+#include <HardwareSerial.h>  
+#include <Stream.h>          
+#include <Print.h>           
+#include <Printable.h>       
+#include <USBAPI.h>          
+#include <Arduino.h>         
+#include <pins_arduino.h>    
+#include <RFTransmitter.h>   
+#include <Wire.h>            
+#include <Stream.h>          
+#include <SPI.h>             
+#include <Adafruit_BMP280.h> 
+#include <Adafruit_Sensor.h> 
+#include <Print.h>           
 
 RFTransmitter transmitter(TXPIN, NODE_ID);
 
@@ -36,7 +54,8 @@ int tccr0b;
 int tccr0a;
 int timsk0;
 unsigned int verbosity=0;
-Adafruit_BMP280 bmp;
+//Adafruit_BMP280 bmp;
+//Wire wire;
 float pressure;
 float temp;
 #define MEASURE_MODE Adafruit_BMP280::MODE_NORMAL
@@ -262,10 +281,15 @@ int get_iopin(int * write_pinnum, char c){
     /*
     digital pins 0,..,25 are enumerated with ascii strings a,..,z
     analog  pins A0,..,A9 are enumerated with ascii strings 0,..,9
+    i2c remote pins 0,...,25 are enumerated with ascii strings A,..Z
     */
     if (c=='g'){return 1;}
     if ( ('0' <= c ) & ( c <= '9' ) ){
         *write_pinnum = c - 48;
+        return 0;
+    }
+    else if ( ('A' <= c ) & ( c <= 'Z') ){
+        *write_pinnum = c - 65;
         return 0;
     }
     else if ( ('a' <= c ) & ( c <= 'z') ){
@@ -276,36 +300,39 @@ int get_iopin(int * write_pinnum, char c){
 	}
 
 void print_temp() {
-    temp=bmp.readTemperature();
-    Serial.print("T=");
-    Serial.println(temp);
+//    temp=bmp.readTemperature();
+//    Serial.print("T=");
+//    Serial.println(temp);
     }
 
 void print_pressure() {
-    pressure=bmp.readPressure();
-    Serial.print("p=");
-    Serial.println(pressure);
+//    pressure=bmp.readPressure();
+//    Serial.print("p=");
+//    Serial.println(pressure);
     }
 
 void set_sampling(){
-    bmp.setSampling(MEASURE_MODE,      /* Operating Mode. */
-                    (Adafruit_BMP280::sensor_sampling)osrs_t,            /* Temp. oversampling */
-                    (Adafruit_BMP280::sensor_sampling)osrs_p,            /* Pressure oversampling */
-                    FILTER_MODE,       /* Filtering. */
-                    STANDBY_TIME);     /* Standby time. */
+//    bmp.setSampling(MEASURE_MODE,      /* Operating Mode. */
+//                    (Adafruit_BMP280::sensor_sampling)osrs_t,            /* Temp. oversampling */
+//                    (Adafruit_BMP280::sensor_sampling)osrs_p,            /* Pressure oversampling */
+//                    FILTER_MODE,       /* Filtering. */
+//                    STANDBY_TIME);     /* Standby time. */
+    }
+
+void init_i2c(){
+    Wire.begin();
     }
 
 void init_temp_sensor(){
-    /*
-        init bmp280 sensor
-    */
-    if ( ! bmp.begin( BMP280_ADDRESS_ALT, 0x60 ) ) {
-        Serial.println("Could not find a valid BMP280 sensor, check wiring!");
-	}
-    set_sampling();
-    //bmp_temp->printSensorDetails();
+//    /*
+//        init bmp280 sensor
+//    */
+//    if ( ! bmp.begin( BMP280_ADDRESS_ALT, 0x60 ) ) {
+//        Serial.println("Could not find a valid BMP280 sensor, check wiring!");
+//	}
+//    set_sampling();
+//    //bmp_temp->printSensorDetails();
     }
-
 
 void set_temp_sampling(uint8_t _osrs_t){
     osrs_t = _osrs_t;
@@ -327,8 +354,8 @@ void setup() {
     // switch led off
     pinMode(13,OUTPUT);
     digitalWrite(13,0);
-
-    init_temp_sensor();
+    //init_temp_sensor();
+    init_i2c();
     }
 
 void loop() {
@@ -380,7 +407,6 @@ void loop() {
                 if ( verbosity >= 4 ){Serial.println("ERROR: wrong pin");}
             }
         }
-
         else if (mode == 0xA1){
             if ( verbosity >= 7 ){
                 Serial.print("config mode, ");
@@ -393,15 +419,15 @@ void loop() {
             if ( (c & 0b11110000 ) == (0b0001<<4 | 0b0000)) {
                 // set verbosity
                 verbosity = (c & 0b00001111) ;
-                if ( verbosity >= 7 ){
+                if ( (c & 0b00001111) >= 7 || verbosity >= 7 ){
                     Serial.print("new verbosity=");
-                    Serial.println(verbosity);
+                    Serial.println(c & 0b00001111);
                     }
                 }
             else if ( (c & 0b11110000 ) == (0b0010<<4 | 0b0000)) {
                 // set temp_sampling
                 osrs_t = c & 0b00001111;
-                set_sampling();
+                //set_sampling();
                 if ( verbosity >= 7 ){
                     Serial.print("new temp sampling: ");
                     Serial.println(osrs_t);
@@ -410,7 +436,7 @@ void loop() {
             else if ( (c & 0b11110000 ) == (0b0011<<4 | 0b0000)) {
                 // set pressure_sampling
                 osrs_p = c & 0b00001111;
-                set_sampling();
+                //set_sampling();
                 if ( verbosity >= 7 ){
                     Serial.print("new pressure sampling: ");
                     Serial.println(osrs_p);
@@ -439,15 +465,37 @@ void loop() {
         }
         else if (mode == 0xA3){
             if ( verbosity >= 7 ){Serial.print("read temperature ");}
-            print_temp();
+            //print_temp();
         }
         else if (mode == 0xA4){
             if ( verbosity >= 7 ){Serial.print("read pressure ");}
-            print_pressure();
+            //print_pressure();
         }
-
-        else{
-        
+        else if (mode == 0xA5){
+            if ( verbosity >= 7 ){Serial.print("i2c write mode,");}
+            uint8_t addr = read_single_char();
+            if ( verbosity >= 7 ){Serial.print(" addr=\"");}
+            if ( verbosity >= 7 ){Serial.print(addr,HEX);}
+            if ( verbosity >= 7 ){Serial.print("\"");}
+            c = read_single_char();
+            if ( verbosity >= 7 ){Serial.print(" data=\"");}
+            if ( verbosity >= 7 ){Serial.print(c,HEX);}
+            Wire.beginTransmission(addr);
+            Wire.write(c);
+            while (Serial.available() > 0){
+                c=Serial.read();
+                Wire.write(c);
+                if ( verbosity >= 7 ){Serial.print(" ");}
+                if ( verbosity >= 7 ){Serial.print(c,HEX);}
+            }
+            if ( verbosity >= 7 ){Serial.print("\"");}
+            if ( verbosity >= 7 ){Serial.print(" written. exit=");}
+            int trans_ret_code;
+            if ( verbosity >= 7 ){Serial.println(trans_ret_code);}
+            trans_ret_code=Wire.endTransmission(false);
+        }
+        else    {
+            if ( verbosity >= 7 ){Serial.println("entering else branch");}
 			for (int i = 0 ;i < MAXCODELEN; i++){
 			  a = read();
 			      if ( a == 0 ){
@@ -459,8 +507,10 @@ void loop() {
 			              code[i]=a;
 			      }
 			}
-			//Serial.println("here the code..");
-			//printcode();
+            if ( verbosity >= 7 ){
+			    Serial.println("done reading, here the code:");
+			    printcode();
+                }
 			
 			if (mode == 0xA0){
 				if ( verbosity >= 7 ){Serial.println("transmitting ir...");}
@@ -470,7 +520,7 @@ void loop() {
 				if ( verbosity >= 7 ){Serial.println("transmitting 433Mhz rf...");}
 				transmit_rf();
 			}
-    }
+            }
 	}
 
 
