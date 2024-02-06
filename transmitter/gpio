@@ -68,13 +68,14 @@ from sys import argv
 from argparse import ArgumentParser
 ap=ArgumentParser()
 ap.add_argument("-w","--write",action='store', type=str,  default=None)
+ap.add_argument("--i2c-write",action='store', type=int,  default=None)
 ap.add_argument("-r","--read",action='store',  type=str,  default=None)
 ap.add_argument("-a","--aread",action='store', type=str, default=None)
 ap.add_argument("-p","--pullup",action='store',type=int,choices=[0,1],default=0)
 ap.add_argument("-c","--config-mode", action='store', type=int)
 ap.add_argument("-t","--get-temp",action='store_true')
 ap.add_argument("-pr","--get-pressure",action='store_true')
-ap.add_argument(dest="data",nargs='?' ,default=None, type=int)
+ap.add_argument(dest="data",nargs='?' ,default=None, type=str)
 args=ap.parse_args()
 
 def findport(serial='5563931313335131C150',pid=0x0043,vid=0x2341):
@@ -106,6 +107,12 @@ elif args.get_temp:
 elif args.get_pressure:
     hexcode=(0xA4).to_bytes(1,'little')
     data=zero+zero+zero+ff+hexcode
+elif not args.i2c_write is None:
+    hexcode=(0xA5).to_bytes(1,'little')
+    from math import ceil
+    from sys import stdin
+    data=zero+zero+zero+ff+hexcode+args.i2c_write.to_bytes(1,'little') + stdin.buffer.read()
+    print(data)
 else:
     raise Exception("ERROR: need one arg from [read,write]")
 
@@ -114,25 +121,24 @@ from time import sleep
 for i in range(2):
     for i in s.readlines():
         print(i.decode(errors="replace"))
-    sleep(1) 
 
-s.write(hex_18)
-s.flush()
-sleep(2)
+#s.write(hex_18)
+#s.flush()
+#sleep(2)
 s.write(data)
 s.flush()
-sleep(2)
-s.write(zero)
-s.write(hex_18)
-s.flush()
+#sleep(2)
+#s.write(zero)
+#s.write(hex_18)
+#s.flush()
 for i in range(2):
     for i in s.readlines():
         print(i.decode(errors="replace"))
-        sleep(1)
-sleep(1)
+        #sleep(1)
+#sleep(1)
 for i in range(2):
     for i in s.readlines():
         print(i.decode(errors="replace"))
-        sleep(1)
-sleep(1)
+        #sleep(1)
+#sleep(1)
 s.close()
