@@ -77,17 +77,17 @@ ap.add_argument("-pr","--get-pressure",action='store_true')
 ap.add_argument(dest="data",nargs='?' ,default=None, type=int)
 args=ap.parse_args()
 
-s = serial.Serial(port='/dev/ttyACM0', baudrate=baudrate,timeout=0)
+def findport(serial='5563931313335131C150',pid=0x0043,vid=0x2341):
+    from os import listdir
+    dirlist = listdir('/dev/')
+    ports = [ '/dev/'+n for n in filter(lambda n: n[0:6]=='ttyACM',dirlist)]
+    return ports[0]
 
-from time import sleep
 
-for i in range(2):
-    for i in s.readlines():
-        print(i.decode(errors="replace"))
-    sleep(1) 
 hex_18=(0x18).to_bytes(1,'little')
 zero=(0x00).to_bytes(1,'little')
 ff=(0xFF).to_bytes(1,'little')
+
 if not args.write is None:
     hex_8f=(0x8F).to_bytes(1,'little')
     data=zero+zero+zero+ff+hex_8f+args.write.encode('ascii')+args.data.to_bytes(1,'little')
@@ -108,6 +108,14 @@ elif args.get_pressure:
     data=zero+zero+zero+ff+hexcode
 else:
     raise Exception("ERROR: need one arg from [read,write]")
+
+s = serial.Serial(port=findport(), baudrate=baudrate,timeout=0)
+from time import sleep
+for i in range(2):
+    for i in s.readlines():
+        print(i.decode(errors="replace"))
+    sleep(1) 
+
 s.write(hex_18)
 s.flush()
 sleep(2)
