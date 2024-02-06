@@ -12,24 +12,34 @@
 #include <Wire.h>
 #include <SPI.h>
 #include <Adafruit_BMP280.h>
-#include <Arduino.h>         
-#include <binary.h>          
-#include <WCharacter.h>      
-#include <WString.h>         
-#include <HardwareSerial.h>  
-#include <Stream.h>          
-#include <Print.h>           
-#include <Printable.h>       
-#include <USBAPI.h>          
-#include <Arduino.h>         
-#include <pins_arduino.h>    
-#include <RFTransmitter.h>   
-#include <Wire.h>            
-#include <Stream.h>          
-#include <SPI.h>             
-#include <Adafruit_BMP280.h> 
-#include <Adafruit_Sensor.h> 
-#include <Print.h>           
+
+// r! fish gen_include_lines.fish
+#include <Adafruit_ADXL343.h>
+#include <Adafruit_BMP280.h>
+#include <Adafruit_BusIO_Register.h>
+#include <Adafruit_I2CDevice.h>
+#include <Adafruit_SPIDevice.h>
+#include <Adafruit_Sensor.h>
+#include <PinChangeInterruptBoards.h>
+#include <PinChangeInterruptHandler.h>
+#include <RFReceiver.h>
+#include <RFTransmitter.h>
+#include <Arduino.h>
+#include <HardwareSerial.h>
+#include <HardwareSerial_private.h>
+#include <IPAddress.h>
+#include <PluggableUSB.h>
+#include <Print.h>
+#include <Printable.h>
+#include <Stream.h>
+#include <USBAPI.h>
+#include <WCharacter.h>
+#include <WString.h>
+#include <binary.h>
+#include <wiring_private.h>
+#include <SPI.h>
+#include <Wire.h>
+#include <pins_arduino.h>
 
 RFTransmitter transmitter(TXPIN, NODE_ID);
 
